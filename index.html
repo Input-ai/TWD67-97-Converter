@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TWD Coordinate Conversion</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+</head>
+<body>
+    <!-- Language selection -->
+    <label for="languageSelect">Select Language / 選擇語言: </label>
+    <select id="languageSelect" onchange="changeLanguage()">
+        <option value="zh-TW">繁體中文</option>
+        <option value="en" selected>English</option> <!-- Set default to English -->
+    </select><br><br>
+
+    <!-- Title -->
+    <h2 id="title">TWD Coordinate Conversion to WGS84</h2>
+
+    <!-- Coordinate system selection -->
+    <label for="twType" id="labelTwType">Select Coordinate System:</label>
+    <select id="twType">
+        <option value="TWD67">TWD67</option>
+        <option value="TWD97">TWD97</option>
+    </select><br><br>
+
+    <!-- Input fields -->
+    <label for="x" id="labelX">X (East Longitude): </label>
+    <input type="number" id="x" placeholder="Enter X coordinate"><br><br>
+
+    <label for="y" id="labelY">Y (North Latitude): </label>
+    <input type="number" id="y" placeholder="Enter Y coordinate"><br><br>
+
+    <button onclick="convertCoordinates()" id="convertButton">Convert</button><br><br>
+
+    <h3 id="resultTitle">Converted WGS84 Coordinates:</h3>
+    <p id="result"></p>
+    <p id="mapLink"></p>
+
+    <script>
+        // Define the Proj4js projections for TWD67 and TWD97
+        const projTWD67 = '+proj=tmerc +lat_0=0 +lon_0=121 +k=1 +x_0=250000 +y_0=0 +datum=WGS84 +units=m +no_defs';
+        const projTWD97 = '+proj=tmerc +lat_0=0 +lon_0=121 +k=1 +x_0=250000 +y_0=0 +datum=WGS84 +units=m +no_defs +towgs84=0.0,0.0,0.0';
+
+        // Change language function
+        function changeLanguage() {
+            const language = document.getElementById('languageSelect').value;
+            if (language === 'zh-TW') {
+                // Traditional Chinese
+                document.getElementById('title').textContent = "TWD 座標轉換到 WGS84";
+                document.getElementById('labelTwType').textContent = "選擇座標系統：";
+                document.getElementById('labelX').textContent = "X (東經): ";
+                document.getElementById('labelY').textContent = "Y (北緯): ";
+                document.getElementById('convertButton').textContent = "轉換";
+                document.getElementById('resultTitle').textContent = "轉換後的 WGS84 座標:";
+            } else {
+                // English
+                document.getElementById('title').textContent = "TWD Coordinate Conversion to WGS84";
+                document.getElementById('labelTwType').textContent = "Select Coordinate System:";
+                document.getElementById('labelX').textContent = "X (East Longitude): ";
+                document.getElementById('labelY').textContent = "Y (North Latitude): ";
+                document.getElementById('convertButton').textContent = "Convert";
+                document.getElementById('resultTitle').textContent = "Converted WGS84 Coordinates:";
+            }
+        }
+
+        function convertCoordinates() {
+            // Get user input values
+            const twType = document.getElementById('twType').value;
+            const x = parseFloat(document.getElementById('x').value);
+            const y = parseFloat(document.getElementById('y').value);
+
+            let projFrom;
+
+            // Select the correct projection system based on the coordinate system choice
+            if (twType === 'TWD67') {
+                projFrom = projTWD67;
+            } else {
+                projFrom = projTWD97;
+            }
+
+            // Define the WGS84 projection system
+            const projWGS84 = '+proj=longlat +datum=WGS84 +no_defs';
+
+            // Perform the coordinate conversion using Proj4js
+            const coords = proj4(projFrom, projWGS84, [x, y]);
+
+            // Display the result
+            const resultText = `${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`;
+            document.getElementById('result').textContent = resultText;
+
+            // Generate Google Maps link
+            const googleMapsLink = `https://www.google.com/maps?q=${coords[1].toFixed(6)},${coords[0].toFixed(6)}`;
+            const mapLinkText = `<a href="${googleMapsLink}" target="_blank">Click here to view location on Google Maps</a>`;
+            document.getElementById('mapLink').innerHTML = mapLinkText;
+        }
+
+        // Call changeLanguage() once to set the initial page to English
+        changeLanguage();
+    </script>
+</body>
+</html>
